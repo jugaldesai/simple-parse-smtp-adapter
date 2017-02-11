@@ -25,10 +25,31 @@ let SimpleParseSmtpAdapter = (adapterOptions) => {
         }
     });
 
+    adapterOptions.verificationSubject =
+  		adapterOptions.verificationSubject ||
+  		'Please verify your e-mail for %appname%';
+  	adapterOptions.verificationBody =
+  		adapterOptions.verificationBody ||
+  		'Hello %username%,<br/><br/>You are being asked to confirm the e-mail address %email% with %appname%<br/><br/>Click <a href="%link%">here</a> to confirm it.';
+  	adapterOptions.passwordResetSubject =
+  		adapterOptions.passwordResetSubject ||
+  		'Password Reset Request for %appname%';
+  	adapterOptions.passwordResetBody =
+  		adapterOptions.passwordResetBody ||
+  		'Hello %username%,<br/><br/>You requested a password reset for %appname%.<br/><br/>Click <a href="%link%">here</a> to reset it.';
+
+      function fillVariables(text, options) {
+        text = text.replace("%username%", options.user.get("username"));
+    		text = text.replace("%email%", options.user.get("email"));
+    		text = text.replace("%appname%", options.appName);
+      	text = text.replace("%link%", options.link);
+        return text;
+      }
+
     /**
      * When emailField is defined in adapterOptines return that field
      * if not return the field email and if is undefined returns username
-     * 
+     *
      * @param Parse Object user
      * @return String email
      */
@@ -96,31 +117,36 @@ let SimpleParseSmtpAdapter = (adapterOptions) => {
      * @returns {Promise}
      */
     let sendPasswordResetEmail = (data) => {
-        let mail = {
-            subject: 'Reset Password',
-            to: getUserEmail(data.user)
-        };
+      let mail = {
+          from: adapterOptions.fromAddress,
+          to: getUserEmail(data.user)
+      };
 
-        if (adapterOptions.templates && adapterOptions.templates.resetPassword) {
+      if(adapterOptions.useSimpleHtmlTextInsteadOfTemplates){
 
-            return renderTemplate(adapterOptions.templates.resetPassword.template, data).then((result) => {
-                mail.text = result.html;
-                mail.subject = adapterOptions.templates.resetPassword.subject;
+        mail.subject = fillVariables(adapterOptions.passwordResetSubject, data);
+        mail.text = fillVariables(adapterOptions.passwordResetBody, data);
 
-                return sendMail(mail);
-            }, (e) => {
+      }else if (adapterOptions.templates && adapterOptions.templates.resetPassword) {
 
-                return new Promise((resolve, reject) => {
-                    console.log(e)
-                    reject(e);
-                });
-            });
+          return renderTemplate(adapterOptions.templates.resetPassword.template, data).then((result) => {
+              mail.text = result.html;
+              mail.subject = adapterOptions.templates.resetPassword.subject;
 
-        } else {
-            mail.text = data.link;
+              return sendMail(mail);
+          }, (e) => {
 
-            return sendMail(mail);
-        }
+              return new Promise((resolve, reject) => {
+                  console.log(e)
+                  reject(e);
+              });
+          });
+
+      } else {
+          mail.text = data.link;
+
+          return sendMail(mail);
+      }
     };
 
     /**
@@ -129,31 +155,36 @@ let SimpleParseSmtpAdapter = (adapterOptions) => {
      * @returns {Promise}
      */
     let sendVerificationEmail = (data) => {
-        let mail = {
-            subject: 'Verify Email',
-            to: getUserEmail(data.user)
-        };
+      let mail = {
+          subject: 'Verify Email',
+          to: getUserEmail(data.user);
+      };
 
-        if (adapterOptions.templates && adapterOptions.templates.verifyEmail) {
+      if(adapterOptions.useSimpleHtmlTextInsteadOfTemplates){
 
-            return renderTemplate(adapterOptions.templates.verifyEmail.template, data).then((result) => {
-                mail.text = result.html;
-                mail.subject = adapterOptions.templates.verifyEmail.subject;
+          mail.subject = fillVariables(adapterOptions.verificationSubject, data);
+          mail.text = fillVariables(adapterOptions.verificationBody, data);
 
-                return sendMail(mail);
-            }, (e) => {
+      }else if (adapterOptions.templates && adapterOptions.templates.verifyEmail) {
 
-                return new Promise((resolve, reject) => {
-                    console.log(e);
-                    reject(e);
-                });
-            });
+          return renderTemplate(adapterOptions.templates.verifyEmail.template, data).then((result) => {
+              mail.text = result.html;
+              mail.subject = adapterOptions.templates.verifyEmail.subject;
 
-        } else {
-            mail.text = data.link;
+              return sendMail(mail);
+          }, (e) => {
 
-            return sendMail(mail);
-        }
+              return new Promise((resolve, reject) => {
+                  console.log(e);
+                  reject(e);
+              });
+          });
+
+      } else {
+          mail.text = data.link;
+
+          return sendMail(mail);
+      }
     };
 
     return Object.freeze({
