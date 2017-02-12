@@ -157,7 +157,7 @@ let SimpleParseSmtpAdapter = (adapterOptions) => {
     let sendVerificationEmail = (data) => {
       let mail = {
           subject: 'Verify Email',
-          to: getUserEmail(data.user);
+          to: getUserEmail(data.user)
       };
 
       if(adapterOptions.useSimpleHtmlTextInsteadOfTemplates){
