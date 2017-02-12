@@ -127,6 +127,8 @@ let SimpleParseSmtpAdapter = (adapterOptions) => {
         mail.subject = fillVariables(adapterOptions.passwordResetSubject, data);
         mail.text = fillVariables(adapterOptions.passwordResetBody, data);
 
+        return sendMail(mail);
+
       }else if (adapterOptions.templates && adapterOptions.templates.resetPassword) {
 
           return renderTemplate(adapterOptions.templates.resetPassword.template, data).then((result) => {
@@ -164,6 +166,8 @@ let SimpleParseSmtpAdapter = (adapterOptions) => {
 
           mail.subject = fillVariables(adapterOptions.verificationSubject, data);
           mail.text = fillVariables(adapterOptions.verificationBody, data);
+
+          return sendMail(mail);
 
       }else if (adapterOptions.templates && adapterOptions.templates.verifyEmail) {
 
