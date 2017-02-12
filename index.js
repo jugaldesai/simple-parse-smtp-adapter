@@ -145,6 +145,7 @@ let SimpleParseSmtpAdapter = (adapterOptions) => {
           });
 
       } else {
+          mail.subject = "Password Reset";
           mail.text = data.link;
 
           return sendMail(mail);
@@ -185,6 +186,7 @@ let SimpleParseSmtpAdapter = (adapterOptions) => {
           });
 
       } else {
+          mail.subject = "Verify Email";
           mail.text = data.link;
 
           return sendMail(mail);
